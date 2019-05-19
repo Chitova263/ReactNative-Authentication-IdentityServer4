@@ -1,8 +1,8 @@
 import React, { Component } from 'react'
 import { StyleSheet, View, ActivityIndicator, Alert, AsyncStorage } from 'react-native';
 import { OIDC_CONFIG, STORAGE_KEY } from '../config/oidc-config';
+
 export default class Loading extends Component {
- 
     constructor(props){
         super(props);
         this._bootstrapAsync();
