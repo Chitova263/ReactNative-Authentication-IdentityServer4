@@ -1,9 +1,16 @@
-﻿using Microsoft.AspNetCore.Hosting;
+﻿// Copyright (c) Brock Allen & Dominick Baier. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See LICENSE in the project root for license information.
+
+
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Serilog;
 using Serilog.Events;
 using Serilog.Sinks.SystemConsole.Themes;
 using System;
+using System.Linq;
 
 namespace SecurityTokenService
 {
@@ -29,8 +36,26 @@ namespace SecurityTokenService
 
             try
             {
+                var seed = args.Contains("/seed");
+                if (seed)
+                {
+                    args = args.Except(new[] { "/seed" }).ToArray();
+                }
+
+                var host = CreateHostBuilder(args).Build();
+
+                if (seed)
+                {
+                    Log.Information("Seeding database...");
+                    var config = host.Services.GetRequiredService<IConfiguration>();
+                    var connectionString = config.GetConnectionString("DefaultConnection");
+                    SeedData.EnsureSeedData(connectionString);
+                    Log.Information("Done seeding database.");
+                    return 0;
+                }
+
                 Log.Information("Starting host...");
-                CreateHostBuilder(args).Build().Run();
+                host.Run();
                 return 0;
             }
             catch (Exception ex)
